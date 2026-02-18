@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Estate Billboard Creator</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
@@ -16,131 +17,154 @@
 
         body {
             font-family: "Century Gothic", AppleGothic, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #e0e0e0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 40px;
+            margin: 0;
         }
 
         /* The Main Billboard Container */
         #billboard {
-            width: 800px;
+            width: 900px;
             background: var(--white);
-            border: 10px solid var(--re-blue);
+            border: 12px solid var(--re-blue);
             display: flex;
             flex-direction: column;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            /* Vital for PDF rendering colors */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        /* Header / Red Bar */
+        /* Header Bar */
         .billboard-header {
-            background-color: var(--re-red);
+            background-color: var(--re-red) !important;
             color: white;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
-            border-bottom: 5px solid var(--re-blue);
+            border-bottom: 8px solid var(--re-blue);
+        }
+
+        .billboard-header h1 {
+            margin: 0;
+            font-size: 32pt;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         /* Layout for Images and Text */
         .main-content {
             display: flex;
-            padding: 20px;
-            gap: 20px;
+            padding: 30px;
+            gap: 25px;
+            background: white;
         }
 
         .image-section {
             display: flex;
-            flex: 1.5;
-            gap: 10px;
+            flex: 1.8;
+            gap: 15px;
         }
 
         .large-pic {
             flex: 2;
-            height: 300px;
-            background: #eee;
-            border: 2px dashed #ccc;
+            height: 350px;
+            background: #f9f9f9;
+            border: 2px dashed #bbb;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            position: relative;
         }
 
         .small-pics-col {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
         }
 
         .small-pic {
-            height: 145px;
-            background: #eee;
-            border: 2px dashed #ccc;
+            height: 167px;
+            background: #f9f9f9;
+            border: 2px dashed #bbb;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            position: relative;
         }
 
         img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Text Section */
         .text-section {
-            flex: 1;
+            flex: 1.2;
             font-size: 14pt;
             color: #333;
-            line-height: 1.4;
+            line-height: 1.5;
+            text-align: left;
         }
 
-        .text-section h1 { color: var(--re-blue); margin: 0 0 5px 0; font-size: 24pt; }
-        .text-section h2 { color: var(--re-red); margin: 0 0 15px 0; font-size: 18pt; }
+        .text-section h1 { color: var(--re-blue); margin: 0 0 10px 0; font-size: 26pt; }
+        .text-section h2 { color: var(--re-red); margin: 0 0 20px 0; font-size: 18pt; }
+        .text-section p { margin: 0; }
 
         /* Property Details Bar */
         .details-bar {
-            background: var(--re-blue);
+            background: var(--re-blue) !important;
             color: white;
-            padding: 15px;
+            padding: 20px;
             display: flex;
             justify-content: space-around;
+            font-size: 18pt;
             font-weight: bold;
         }
 
-        /* Controls (Not visible in PDF) */
+        /* UI Controls (Hidden in PDF via JS logic) */
         .controls {
-            margin-top: 30px;
+            margin-top: 40px;
             background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 800px;
+            padding: 30px;
+            border-radius: 12px;
+            width: 900px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        .upload-btn {
-            display: block;
-            background: #444;
-            color: white;
-            padding: 8px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 0.8rem;
-            margin-top: 5px;
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label { font-weight: bold; color: #555; }
+
+        input[type="file"], select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
 
         button.download-btn {
             grid-column: span 2;
-            padding: 15px;
+            padding: 20px;
             background: var(--re-red);
             color: white;
             border: none;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
+            transition: background 0.3s;
+        }
+
+        button.download-btn:hover {
+            background: #b71c1c;
         }
     </style>
 </head>
@@ -148,111 +172,131 @@
 
     <div id="billboard">
         <div class="billboard-header">
-            <h1>PREMIUM PROPERTY LISTING</h1>
+            <h1>FOR SALE</h1>
         </div>
 
         <div class="main-content">
             <div class="image-section">
-                <div class="large-pic" id="large-preview">Main Image</div>
+                <div class="large-pic" id="large-preview">Main Image Preview</div>
                 <div class="small-pics-col">
-                    <div class="small-pic" id="small1-preview">Pic 1</div>
-                    <div class="small-pic" id="small2-preview">Pic 2</div>
+                    <div class="small-pic" id="small1-preview">Small Pic 1</div>
+                    <div class="small-pic" id="small2-preview">Small Pic 2</div>
                 </div>
             </div>
 
             <div class="text-section" id="text-display">
-                <h1 id="out-h">Property Title</h1>
-                <h2 id="out-sh">Property Subheading</h2>
-                <p id="out-body">Upload a text file to populate this description. Ensure your file has a heading, subheading, and body text.</p>
+                <h1 id="out-h">Luxury Living</h1>
+                <h2 id="out-sh">Available Now</h2>
+                <p id="out-body">Upload your .txt file to fill this section with your property description.</p>
             </div>
         </div>
 
         <div class="details-bar">
-            <span>Rooms: <span id="val-rooms">0</span></span>
-            <span>Bathrooms: <span id="val-baths">0</span></span>
-            <span>Cars: <span id="val-cars">0</span></span>
+            <span>🛏 <span id="val-rooms">1</span> Bed</span>
+            <span>🚿 <span id="val-baths">1</span> Bath</span>
+            <span>🚗 <span id="val-cars">1</span> Car</span>
         </div>
     </div>
 
     <div class="controls">
-        <div>
-            <label>Upload Main Image:</label>
+        <div class="control-group">
+            <label>Main Photo:</label>
             <input type="file" accept="image/*" onchange="previewImg(event, 'large-preview')">
         </div>
-        <div>
-            <label>Upload Text File (.txt):</label>
+        <div class="control-group">
+            <label>Description File (.txt):</label>
             <input type="file" accept=".txt" onchange="loadText(event)">
         </div>
-        <div>
-            <label>Small Image 1:</label>
+        <div class="control-group">
+            <label>Small Photo 1:</label>
             <input type="file" accept="image/*" onchange="previewImg(event, 'small1-preview')">
         </div>
-        <div>
-            <label>Small Image 2:</label>
+        <div class="control-group">
+            <label>Small Photo 2:</label>
             <input type="file" accept="image/*" onchange="previewImg(event, 'small2-preview')">
         </div>
 
-        <div>
-            <label>Rooms:</label>
+        <div class="control-group">
+            <label>Bedrooms:</label>
             <select onchange="updateVal('val-rooms', this.value)">
                 <option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
             </select>
         </div>
-        <div>
-            <label>Baths:</label>
+        <div class="control-group">
+            <label>Bathrooms:</label>
             <select onchange="updateVal('val-baths', this.value)">
                 <option>1</option><option>2</option><option>3</option><option>4+</option>
             </select>
         </div>
-        <div>
-            <label>Cars:</label>
+        <div class="control-group">
+            <label>Car Spaces:</label>
             <select onchange="updateVal('val-cars', this.value)">
                 <option>1</option><option>2</option><option>3</option><option>4+</option>
             </select>
         </div>
 
-        <button class="download-btn" onclick="downloadPDF()">DOWNLOAD AS PDF</button>
+        <button class="download-btn" onclick="downloadPDF()">DOWNLOAD BILLBOARD AS PDF</button>
     </div>
 
     <script>
-        // Preview Images
-        function previewImg(event, targetId) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                const output = document.getElementById(targetId);
-                output.innerHTML = `<img src="${reader.result}">`;
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-
-        // Load Text File
-        function loadText(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                const lines = reader.result.split('\n').filter(line => line.trim() !== "");
-                if (lines.length >= 1) document.getElementById('out-h').innerText = lines[0];
-                if (lines.length >= 2) document.getElementById('out-sh').innerText = lines[1];
-                if (lines.length >= 3) document.getElementById('out-body').innerText = lines.slice(2).join(' ');
-            };
-            reader.readAsText(event.target.files[0]);
-        }
-
-        // Update Dropdown Values
+        // Update labels instantly
         function updateVal(id, val) {
             document.getElementById(id).innerText = val;
         }
 
-        // PDF Generation
+        // Image preview logic
+        function previewImg(event, targetId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const output = document.getElementById(targetId);
+                output.innerHTML = `<img src="${e.target.result}">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Read text file and split into Heading, Subheading, Body
+        function loadText(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l !== "");
+                if (lines.length >= 1) document.getElementById('out-h').innerText = lines[0];
+                if (lines.length >= 2) document.getElementById('out-sh').innerText = lines[1];
+                if (lines.length >= 3) document.getElementById('out-body').innerText = lines.slice(2).join(' ');
+            };
+            reader.readAsText(file);
+        }
+
+        // PDF Generation Logic
         async function downloadPDF() {
             const { jsPDF } = window.jspdf;
             const billboard = document.getElementById('billboard');
-            
-            const canvas = await html2canvas(billboard, { scale: 2 });
+
+            // Using html2canvas to take a snapshot of the div
+            // We use a high scale for print quality
+            const canvas = await html2canvas(billboard, {
+                scale: 3, 
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff"
+            });
+
             const imgData = canvas.toDataURL('image/png');
             
-            const pdf = new jsPDF('l', 'px', [canvas.width, canvas.height]);
+            // Create PDF in Landscape
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+
             pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-            pdf.save("real-estate-billboard.pdf");
+            pdf.save("property-billboard.pdf");
         }
     </script>
 </body>
