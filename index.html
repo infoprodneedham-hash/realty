@@ -3,219 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Estate Billboard Generator</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+    <title>Property Listing Dashboard</title>
     <style>
+        :root {
+            --re-red: #e31b23;
+            --re-blue: #0054a4;
+            --white: #ffffff;
+            --bg: #f4f4f4;
+        }
+
         body {
             font-family: "Century Gothic", AppleGothic, sans-serif;
-            background-color: #444;
-            padding: 40px;
+            background-color: var(--bg);
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding-bottom: 50px;
         }
 
-        /* Fixed container to prevent jumbling */
+        /* --- THE BILLBOARD --- */
         #billboard {
-            width: 1000px;
-            background-color: #ffffff;
-            border: 15px solid #1976d2;
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
+            width: 950px;
+            margin-top: 40px;
+            background: var(--white);
+            border: 12px solid var(--re-blue);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
 
-        /* Header section */
         .header {
-            background-color: #d32f2f !important;
-            color: #ffffff !important;
+            background-color: var(--re-red);
+            color: white;
             text-align: center;
-            padding: 30px;
-            border-bottom: 10px solid #1976d2;
+            padding: 25px;
+            border-bottom: 8px solid var(--re-blue);
         }
-        .header h1 { margin: 0; font-size: 42pt; text-transform: uppercase; }
 
-        /* Stable Table-Based Layout for PDF */
-        .content-table {
-            display: table;
-            width: 100%;
-            border-spacing: 20px;
-            border-collapse: separate;
+        .header h1 {
+            margin: 0;
+            font-size: 36pt;
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
-        .content-row { display: table-row; }
-        .image-cell { display: table-cell; width: 600px; vertical-align: top; }
-        .text-cell { display: table-cell; width: 340px; vertical-align: top; font-size: 14pt; line-height: 1.4; }
 
-        /* Image Grouping */
-        .image-container { width: 600px; }
+        .main-container {
+            display: grid;
+            grid-template-columns: 600px 1fr;
+            min-height: 400px;
+        }
+
+        /* Image Section */
+        .photo-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+
         .large-box {
-            width: 400px;
-            height: 350px;
+            height: 380px;
             background: #eee;
-            float: left;
-            margin-right: 15px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            border: 1px solid #ccc;
         }
-        .small-box-stack { width: 180px; float: left; }
+
+        .small-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .small-box {
-            width: 180px;
-            height: 167px;
+            height: 182.5px;
             background: #eee;
-            margin-bottom: 16px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            border: 1px solid #ccc;
         }
 
-        .clear { clear: both; }
+        img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Text Styling */
-        #disp-h { color: #1976d2; font-size: 26pt; margin: 0 0 5px 0; }
-        #disp-sh { color: #d32f2f; font-size: 18pt; margin: 0 0 15px 0; }
-        #disp-body { font-size: 14pt; color: #333; }
+        /* Text Section */
+        .details-text {
+            padding: 25px 25px 25px 0;
+            font-size: 14pt;
+        }
+
+        .details-text h2 { color: var(--re-blue); font-size: 24pt; margin: 0 0 10px 0; border-bottom: 2px solid #eee; }
+        .details-text h3 { color: var(--re-red); font-size: 18pt; margin: 0 0 15px 0; }
+        .details-text p { margin: 0; line-height: 1.6; color: #444; }
 
         /* Footer Icons */
-        .footer-bar {
-            background-color: #1976d2 !important;
-            color: #ffffff !important;
-            padding: 20px 0;
-            text-align: center;
-            width: 100%;
-        }
-        .icon-item {
-            display: inline-block;
-            width: 30%;
+        .footer-stats {
+            background: var(--re-blue);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
             font-size: 22pt;
             font-weight: bold;
         }
 
-        /* Controls Panel (Hidden from PDF) */
-        .ui-panel {
-            width: 1000px;
-            background: #fff;
+        .stat-item { display: flex; align-items: center; gap: 15px; }
+
+        /* --- CONTROL PANEL --- */
+        .editor-panel {
+            width: 950px;
             margin-top: 30px;
-            padding: 25px;
-            border-radius: 8px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
         }
-        .ui-panel button {
-            grid-column: span 2;
-            padding: 20px;
-            background: #d32f2f;
-            color: white;
-            border: none;
-            font-weight: bold;
-            font-size: 1.3rem;
-            cursor: pointer;
-        }
-        img { width: 100%; height: 100%; object-fit: cover; }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-weight: bold; color: var(--re-blue); font-size: 0.9rem; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+
+        .full-width { grid-column: span 3; border-top: 1px solid #eee; padding-top: 15px; text-align: center; color: #777; font-style: italic; }
+
     </style>
 </head>
 <body>
 
     <div id="billboard">
         <div class="header">
-            <h1>Premium Property</h1>
+            <h1>Just Listed</h1>
         </div>
 
-        <div class="content-table">
-            <div class="content-row">
-                <div class="image-cell">
-                    <div class="image-container">
-                        <div class="large-box" id="p-main"></div>
-                        <div class="small-box-stack">
-                            <div class="small-box" id="p-s1"></div>
-                            <div class="small-box" id="p-s2"></div>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
+        <div class="main-container">
+            <div class="photo-grid">
+                <div class="large-box" id="view-main">Click Upload Below</div>
+                <div class="small-stack">
+                    <div class="small-box" id="view-s1">Pic 1</div>
+                    <div class="small-box" id="view-s2">Pic 2</div>
                 </div>
+            </div>
 
-                <div class="text-cell">
-                    <h2 id="disp-h">Property Title</h2>
-                    <h3 id="disp-sh">Subheading</h3>
-                    <div id="disp-body">Description will appear here after text file upload.</div>
-                </div>
+            <div class="details-text">
+                <h2 id="view-h">Property Headline</h2>
+                <h3 id="view-sh">Subheading Details</h3>
+                <p id="view-body">Your property description from the notepad file will appear here...</p>
             </div>
         </div>
 
-        <div class="footer-bar">
-            <div class="icon-item">🛌 <span id="r-val">0</span></div>
-            <div class="icon-item">🛁 <span id="b-val">0</span></div>
-            <div class="icon-item">🚗 <span id="c-val">0</span></div>
+        <div class="footer-stats">
+            <div class="stat-item"><span>🛌</span> <span id="num-r">0</span></div>
+            <div class="stat-item"><span>🛁</span> <span id="num-b">0</span></div>
+            <div class="stat-item"><span>🚗</span> <span id="num-c">0</span></div>
         </div>
     </div>
 
-    <div class="ui-panel">
-        <div><label>Main Image:</label><br><input type="file" accept="image/*" onchange="upImg(this, 'p-main')"></div>
-        <div><label>Text File (.txt):</label><br><input type="file" accept=".txt" onchange="upTxt(this)"></div>
-        <div><label>Side Image 1:</label><br><input type="file" accept="image/*" onchange="upImg(this, 'p-s1')"></div>
-        <div><label>Side Image 2:</label><br><input type="file" accept="image/*" onchange="upImg(this, 'p-s2')"></div>
-        
-        <div><label>Rooms:</label><br><select onchange="updateVal('r-val', this.value)"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-        <div><label>Baths:</label><br><select onchange="updateVal('b-val', this.value)"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
-        <div><label>Cars:</label><br><select onchange="updateVal('c-val', this.value)"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+    <div class="editor-panel">
+        <div class="input-group">
+            <label>Main Image (.jpg/.png)</label>
+            <input type="file" accept="image/*" onchange="loadImg(this, 'view-main')">
+        </div>
+        <div class="input-group">
+            <label>Small Image 1</label>
+            <input type="file" accept="image/*" onchange="loadImg(this, 'view-s1')">
+        </div>
+        <div class="input-group">
+            <label>Small Image 2</label>
+            <input type="file" accept="image/*" onchange="loadImg(this, 'view-s2')">
+        </div>
 
-        <button onclick="savePDF()">DOWNLOAD BILLBOARD PDF</button>
+        <div class="input-group">
+            <label>Property Text (.txt)</label>
+            <input type="file" accept=".txt" onchange="loadTxt(this)">
+        </div>
+
+        <div class="input-group">
+            <label>Rooms</label>
+            <select onchange="updateStat('num-r', this.value)">
+                <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Baths</label>
+            <select onchange="updateStat('num-b', this.value)">
+                <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Cars</label>
+            <select onchange="updateStat('num-c', this.value)">
+                <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+        </div>
+
+        <div class="full-width">
+            Billboard Editor v1.0 - Use System Print (Ctrl+P) to save as PDF if needed.
+        </div>
     </div>
 
     <script>
-        function updateVal(id, val) { document.getElementById(id).innerText = val; }
+        // Update Icons/Stats
+        function updateStat(id, val) {
+            document.getElementById(id).innerText = val;
+        }
 
-        function upImg(input, target) {
+        // Image Processing
+        function loadImg(input, targetId) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById(target).innerHTML = `<img src="${e.target.result}">`;
+                reader.onload = function(e) {
+                    const box = document.getElementById(targetId);
+                    box.innerHTML = `<img src="${e.target.result}">`;
                 }
                 reader.readAsDataURL(file);
             }
         }
 
-        function upTxt(input) {
+        // Text File Processing
+        function loadTxt(input) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = function(e) {
                     const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l !== "");
-                    document.getElementById('disp-h').innerText = lines[0] || "Headline";
-                    document.getElementById('disp-sh').innerText = lines[1] || "Subheading";
-                    document.getElementById('disp-body').innerText = lines.slice(2).join(" ") || "Body";
+                    if (lines[0]) document.getElementById('view-h').innerText = lines[0];
+                    if (lines[1]) document.getElementById('view-sh').innerText = lines[1];
+                    if (lines.length > 2) {
+                        document.getElementById('view-body').innerText = lines.slice(2).join(" ");
+                    }
                 }
                 reader.readAsText(file);
             }
-        }
-
-        async function savePDF() {
-            const { jsPDF } = window.jspdf;
-            const element = document.getElementById('billboard');
-            
-            // html2canvas capture with settings to fix alignment
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                width: 1000, // Force the width
-                windowWidth: 1000
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-            
-            // Landscape PDF matching canvas dimensions
-            const pdf = new jsPDF({
-                orientation: 'l',
-                unit: 'px',
-                format: [canvas.width, canvas.height]
-            });
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-            pdf.save("billboard-export.pdf");
         }
     </script>
 </body>
