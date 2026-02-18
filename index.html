@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Estate Billboard Gen</title>
+    <title>Real Estate Billboard Generator</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,184 +11,162 @@
     <style>
         body {
             font-family: "Century Gothic", AppleGothic, sans-serif;
-            background-color: #333;
+            background-color: #444;
+            padding: 40px;
+            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 50px;
         }
 
-        /* FIXED WIDTH CONTAINER - Crucial for PDF consistency */
-        #billboard-wrapper {
-            width: 1000px;
-            background: white;
-            padding: 0;
-            margin: 0;
-        }
-
+        /* Fixed container to prevent jumbling */
         #billboard {
             width: 1000px;
-            display: block; /* Removed flex to prevent shifting */
-            border: 15px solid #1976d2; /* Blue Border */
+            background-color: #ffffff;
+            border: 15px solid #1976d2;
             box-sizing: border-box;
-            background: white;
+            -webkit-print-color-adjust: exact;
         }
 
+        /* Header section */
         .header {
-            background-color: #d32f2f !important; /* Red */
-            color: white;
+            background-color: #d32f2f !important;
+            color: #ffffff !important;
             text-align: center;
             padding: 30px;
             border-bottom: 10px solid #1976d2;
         }
+        .header h1 { margin: 0; font-size: 42pt; text-transform: uppercase; }
 
-        .header h1 { margin: 0; font-size: 40pt; text-transform: uppercase; }
-
-        /* Grid layout is more stable for html2canvas than Flexbox */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 600px 370px; /* Fixed sizes prevent "floating" items */
-            gap: 15px;
-            padding: 15px;
+        /* Stable Table-Based Layout for PDF */
+        .content-table {
+            display: table;
+            width: 100%;
+            border-spacing: 20px;
+            border-collapse: separate;
         }
+        .content-row { display: table-row; }
+        .image-cell { display: table-cell; width: 600px; vertical-align: top; }
+        .text-cell { display: table-cell; width: 340px; vertical-align: top; font-size: 14pt; line-height: 1.4; }
 
-        .left-pics {
-            display: grid;
-            grid-template-columns: 380px 190px;
-            gap: 10px;
-        }
-
+        /* Image Grouping */
+        .image-container { width: 600px; }
         .large-box {
-            width: 380px;
+            width: 400px;
             height: 350px;
             background: #eee;
+            float: left;
+            margin-right: 15px;
             overflow: hidden;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
         }
-
-        .small-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
+        .small-box-stack { width: 180px; float: left; }
         .small-box {
-            width: 190px;
-            height: 170px;
+            width: 180px;
+            height: 167px;
             background: #eee;
+            margin-bottom: 16px;
             overflow: hidden;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
         }
 
-        .text-area {
-            font-size: 14pt;
-            line-height: 1.4;
-            color: #222;
-            padding: 10px;
-        }
+        .clear { clear: both; }
 
-        .text-area h2 { color: #1976d2; font-size: 24pt; margin: 0 0 5px 0; }
-        .text-area h3 { color: #d32f2f; font-size: 18pt; margin: 0 0 10px 0; }
+        /* Text Styling */
+        #disp-h { color: #1976d2; font-size: 26pt; margin: 0 0 5px 0; }
+        #disp-sh { color: #d32f2f; font-size: 18pt; margin: 0 0 15px 0; }
+        #disp-body { font-size: 14pt; color: #333; }
 
+        /* Footer Icons */
         .footer-bar {
-            background: #1976d2 !important;
-            color: white;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            background-color: #1976d2 !important;
+            color: #ffffff !important;
+            padding: 20px 0;
             text-align: center;
-            font-size: 20pt;
+            width: 100%;
+        }
+        .icon-item {
+            display: inline-block;
+            width: 30%;
+            font-size: 22pt;
             font-weight: bold;
         }
 
-        img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* UI Panel - Hidden from PDF */
+        /* Controls Panel (Hidden from PDF) */
         .ui-panel {
-            background: #fff;
             width: 1000px;
+            background: #fff;
             margin-top: 30px;
-            padding: 30px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 8px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            box-sizing: border-box;
         }
-
         .ui-panel button {
             grid-column: span 2;
             padding: 20px;
             background: #d32f2f;
             color: white;
             border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
             font-weight: bold;
+            font-size: 1.3rem;
+            cursor: pointer;
         }
+        img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
-    <div id="billboard-wrapper">
-        <div id="billboard">
-            <div class="header">
-                <h1>Property for Sale</h1>
-            </div>
+    <div id="billboard">
+        <div class="header">
+            <h1>Premium Property</h1>
+        </div>
 
-            <div class="content-grid">
-                <div class="left-pics">
-                    <div class="large-box" id="p-main"></div>
-                    <div class="small-stack">
-                        <div class="small-box" id="p-s1"></div>
-                        <div class="small-box" id="p-s2"></div>
+        <div class="content-table">
+            <div class="content-row">
+                <div class="image-cell">
+                    <div class="image-container">
+                        <div class="large-box" id="p-main"></div>
+                        <div class="small-box-stack">
+                            <div class="small-box" id="p-s1"></div>
+                            <div class="small-box" id="p-s2"></div>
+                        </div>
+                        <div class="clear"></div>
                     </div>
                 </div>
 
-                <div class="text-area">
-                    <h2 id="disp-h">Headline Goes Here</h2>
-                    <h3 id="disp-sh">Subheading text</h3>
-                    <div id="disp-body">Upload your description text file.</div>
+                <div class="text-cell">
+                    <h2 id="disp-h">Property Title</h2>
+                    <h3 id="disp-sh">Subheading</h3>
+                    <div id="disp-body">Description will appear here after text file upload.</div>
                 </div>
             </div>
+        </div>
 
-            <div class="footer-bar">
-                <div>Rooms: <span id="r-val">0</span></div>
-                <div>Baths: <span id="b-val">0</span></div>
-                <div>Cars: <span id="c-val">0</span></div>
-            </div>
+        <div class="footer-bar">
+            <div class="icon-item">🛌 <span id="r-val">0</span></div>
+            <div class="icon-item">🛁 <span id="b-val">0</span></div>
+            <div class="icon-item">🚗 <span id="c-val">0</span></div>
         </div>
     </div>
 
     <div class="ui-panel">
-        <div><label>Main Pic:</label><br><input type="file" onchange="upImg(this, 'p-main')"></div>
-        <div><label>Text File (.txt):</label><br><input type="file" onchange="upTxt(this)"></div>
-        <div><label>Side Pic 1:</label><br><input type="file" onchange="upImg(this, 'p-s1')"></div>
-        <div><label>Side Pic 2:</label><br><input type="file" onchange="upImg(this, 'p-s2')"></div>
+        <div><label>Main Image:</label><br><input type="file" accept="image/*" onchange="upImg(this, 'p-main')"></div>
+        <div><label>Text File (.txt):</label><br><input type="file" accept=".txt" onchange="upTxt(this)"></div>
+        <div><label>Side Image 1:</label><br><input type="file" accept="image/*" onchange="upImg(this, 'p-s1')"></div>
+        <div><label>Side Image 2:</label><br><input type="file" accept="image/*" onchange="upImg(this, 'p-s2')"></div>
         
-        <div>
-            <label>Rooms:</label>
-            <select onchange="document.getElementById('r-val').innerText=this.value">
-                <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-            </select>
-        </div>
-        <div>
-            <label>Bathrooms:</label>
-            <select onchange="document.getElementById('b-val').innerText=this.value">
-                <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
-            </select>
-        </div>
-        <div>
-            <label>Car Parks:</label>
-            <select onchange="document.getElementById('c-val').innerText=this.value">
-                <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
-            </select>
-        </div>
+        <div><label>Rooms:</label><br><select onchange="updateVal('r-val', this.value)"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div><label>Baths:</label><br><select onchange="updateVal('b-val', this.value)"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+        <div><label>Cars:</label><br><select onchange="updateVal('c-val', this.value)"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
 
-        <button onclick="savePDF()">DOWNLOAD AS PDF</button>
+        <button onclick="savePDF()">DOWNLOAD BILLBOARD PDF</button>
     </div>
 
     <script>
+        function updateVal(id, val) { document.getElementById(id).innerText = val; }
+
         function upImg(input, target) {
             const file = input.files[0];
             if (file) {
@@ -205,7 +183,7 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const lines = e.target.result.split('\n').filter(l => l.trim() !== "");
+                    const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l !== "");
                     document.getElementById('disp-h').innerText = lines[0] || "Headline";
                     document.getElementById('disp-sh').innerText = lines[1] || "Subheading";
                     document.getElementById('disp-body').innerText = lines.slice(2).join(" ") || "Body";
@@ -218,22 +196,26 @@
             const { jsPDF } = window.jspdf;
             const element = document.getElementById('billboard');
             
-            // Capture canvas at high resolution
+            // html2canvas capture with settings to fix alignment
             const canvas = await html2canvas(element, {
                 scale: 2,
                 useCORS: true,
-                allowTaint: false,
-                // These two settings help with element positioning
-                windowWidth: 1000,
-                scrollX: 0,
-                scrollY: 0
+                logging: false,
+                width: 1000, // Force the width
+                windowWidth: 1000
             });
 
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
-            const pdf = new jsPDF('l', 'px', [canvas.width, canvas.height]);
+            const imgData = canvas.toDataURL('image/png');
             
-            pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-            pdf.save("real-estate-billboard.pdf");
+            // Landscape PDF matching canvas dimensions
+            const pdf = new jsPDF({
+                orientation: 'l',
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save("billboard-export.pdf");
         }
     </script>
 </body>
